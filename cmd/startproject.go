@@ -1,6 +1,5 @@
 /*
 Copyright © 2024 NAME HERE <EMAIL ADDRESS>
-
 */
 package cmd
 
@@ -8,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"gorim.org/gorim-cli/generator"
 )
 
 // startprojectCmd represents the startproject command
@@ -21,7 +21,13 @@ Cobra is a CLI library for Go that empowers applications.
 This application is a tool to generate the needed files
 to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("startproject called")
+		if len(args) == 0 {
+			fmt.Println("Project name is required")
+			return
+		}
+
+		projectName := args[0]
+		generator.StartProject(projectName)
 	},
 }
 

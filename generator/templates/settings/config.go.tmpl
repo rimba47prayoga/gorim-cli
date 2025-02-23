@@ -1,0 +1,70 @@
+package settings
+
+import (
+	"{{.ProjectName}}/migrations"
+
+	"github.com/glebarez/sqlite"
+	"gorim.org/gorim"
+	"gorim.org/gorim/conf"
+	"gorim.org/gorim/interfaces"
+	"gorim.org/gorim/middlewares"
+	"gorim.org/gorim/permissions"
+	"gorm.io/gorm"
+)
+
+// its just for flag to check if settings was configured.
+var CONFIGURED bool
+
+var DEBUG bool
+
+var ALLOWED_HOSTS []string = []string{"localhost"}
+
+var DATABASE conf.Database
+
+var Server *gorim.Server
+
+var HOST string
+var PORT uint
+
+func SetupDatabase() *gorm.DB {
+	db, err := gorm.Open(sqlite.Open(DATABASE.Name), &gorm.Config{})
+	if err != nil {
+		panic(err)
+	}
+	return db
+}
+
+func SetupMiddlewares() {
+	Server.Use(&middlewares.LoggerMiddleware{})
+	Server.Use(&middlewares.AllowedHostsMiddleware{})
+	// add other middlewares here.
+
+	// keep this at bottom.
+	Server.Use(&middlewares.RecoverMiddleware{})
+}
+
+func Configure() {
+	conf.UseEnv(".env")
+	CONFIGURED = true
+	DEBUG = true
+	DATABASE = conf.Database{
+		Name:     conf.GetEnv("DB_NAME", "sqlite.db"),
+	}
+	HOST = "127.0.0.1"
+	PORT = 8000
+	Server = gorim.New()
+	db := SetupDatabase()
+	SetupMiddlewares()
+
+	conf.DEFAULT_PERMISSION_STRUCTS = []interfaces.IPermission{
+		&permissions.AllowAny{},
+	}
+	conf.ALLOWED_HOSTS = ALLOWED_HOSTS
+
+	// its for gorim settings.
+	conf.DB = db
+	conf.GorimServer = Server
+	conf.HOST = HOST
+	conf.PORT = PORT
+	conf.MigrationInstance = migrations.Migrations
+}

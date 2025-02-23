@@ -1,4 +1,4 @@
-module github.com/rimba47prayoga/gorim-cli.git
+module gorim.org/gorim-cli
 
 go 1.22.0
 

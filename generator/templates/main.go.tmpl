@@ -1,0 +1,15 @@
+package main
+
+import (
+	"{{.ProjectName}}/api"
+	"{{.ProjectName}}/settings"
+
+	"gorim.org/gorim/cmd"
+)
+
+
+func main() {
+	settings.Configure()
+	api.APIRoutes()
+	cmd.Execute()
+}

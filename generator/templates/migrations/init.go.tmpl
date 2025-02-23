@@ -1,0 +1,19 @@
+package migrations
+
+import (
+	"gorim.org/gorim/migrations"
+)
+
+var Migrations *migrations.Migrations
+
+func init() {
+	Migrations = &migrations.Migrations{
+		Models: Register(),
+	}
+	Migrations.AddOperation(
+		migrations.Operation{
+			Name: migrations.MIGRATE_MODELS,
+			Func: Migrations.RunMigrationModels(),
+		},
+	)
+}
