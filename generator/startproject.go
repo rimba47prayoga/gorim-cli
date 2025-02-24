@@ -1,18 +1,13 @@
 package generator
 
 import (
-	"embed"
 	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
-	"text/template"
 )
 
-//go:embed templates/*
-var templatesFS embed.FS
-
-var files = map[string]string{
+var startProjectFiles = map[string]string{
 	".gitignore":         "templates/.gitignore.tmpl",
 	".env":               "templates/.env.tmpl",
 	"LICENSE":            "templates/LICENSE.tmpl",
@@ -21,33 +16,6 @@ var files = map[string]string{
 	"migrations/init.go": "templates/migrations/init.go.tmpl",
 	"migrations/register.go": "templates/migrations/register.go.tmpl",
 	"settings/config.go": "templates/settings/config.go.tmpl",
-}
-
-// Template context struct
-type TemplateContext struct {
-	ProjectName string
-}
-
-func createFileFromTemplate(destPath, tmplPath string, context TemplateContext) error {
-	// Read template from embedded filesystem
-	content, err := templatesFS.ReadFile(tmplPath)
-	if err != nil {
-		return err
-	}
-
-	tmpl, err := template.New(filepath.Base(tmplPath)).Parse(string(content))
-	if err != nil {
-		return err
-	}
-
-	file, err := os.Create(destPath)
-	if err != nil {
-		return err
-	}
-	defer file.Close()
-
-	// Pass context when executing the template
-	return tmpl.Execute(file, context)
 }
 
 // initGoMod initializes a Go module with the given project name.
@@ -135,14 +103,14 @@ func StartProject(projectName string) {
 
 	context := TemplateContext{ProjectName: projectName}
 
-	for path, tmplPath := range files {
+	for path, tmplPath := range startProjectFiles {
 		dir := filepath.Dir(path)
 		if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 			fmt.Println("Error creating directory:", err)
 			continue
 		}
 
-		if err := createFileFromTemplate(path, tmplPath, context); err != nil {
+		if err := CreateFileFromTemplate(path, tmplPath, context); err != nil {
 			fmt.Println("Error creating file:", err)
 		}
 	}
